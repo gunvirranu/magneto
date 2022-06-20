@@ -50,8 +50,7 @@ elseif(NOT PROJECT_IS_TOP_LEVEL)
 endif()
 # Anything below this is purely for developer mode
 
-# TODO: Uncomment when tests are created
-# include(CTest)
-# if(BUILD_TESTING)
-#     add_subdirectory(tests)
-# endif()
+include(CTest)
+if(BUILD_TESTING)
+ add_subdirectory(tests)
+endif()
