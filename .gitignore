@@ -1,0 +1,24 @@
+### C ###
+*.o
+*.obj
+*.a
+*.lib
+*.exe
+*.out
+
+### CMake ###
+build/
+cmake-build-*/
+CMakeUserPresets.json
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+Makefile
+
+# IDEs
+.idea/
+.vs/
+.vscode/
+
+# Project
+docs/html
