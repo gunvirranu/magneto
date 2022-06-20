@@ -14,6 +14,12 @@ project(
     LANGUAGES C
 )
 
+option(
+    magneto_SINGLE_PRECISION_FLOAT
+    "Use single-precision floating point instead of the default double"
+    OFF
+)
+
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 
@@ -31,6 +37,10 @@ target_include_directories(
 )
 
 target_compile_features(magneto PUBLIC c_std_99)
+
+if(magneto_SINGLE_PRECISION_FLOAT)
+    target_compile_definitions(magneto PUBLIC MAGNETO_SINGLE_PRECISION)
+endif()
 
 # ---- Developer mode ----
 if(NOT magneto_DEVELOPER_MODE)
