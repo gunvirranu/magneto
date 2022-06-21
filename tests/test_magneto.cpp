@@ -13,3 +13,8 @@ TEST_CASE("test_constants") {
     CHECK(magneto_deg_to_rad(60) == Approx(magneto_PI / 3));
 }
 
+TEST_CASE("test_dec_year") {
+    CHECK(((magneto_DecYear) { 2014.513 }).year == 2014.513);
+    const magneto_DecYear t = magneto_DecYear_from_date(2020, 3, 1, 7, 6, 5);
+    CHECK((int) t.year == 2020);
+}
