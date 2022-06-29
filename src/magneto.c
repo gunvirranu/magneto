@@ -52,7 +52,7 @@ real magneto_deg_to_rad(const real deg) {
     return deg * RAD_PER_DEG;
 }
 
-DecYear magneto_DecYear_from_date(
+DecYear magneto_DecYear_from_datetime(
     int_fast16_t year, int_fast8_t month, int_fast8_t day,
     int_fast8_t hour, int_fast8_t minute, int_fast8_t sec
 ) {
@@ -62,10 +62,10 @@ DecYear magneto_DecYear_from_date(
     return (DecYear) { .year = ((real) year) + year_frac };
 }
 
-DecYear magneto_DecYear_from_data(
+DecYear magneto_DecYear_from_date(
     int_fast16_t year, int_fast8_t month, int_fast8_t day
 ) {
-    return magneto_DecYear_from_date(year, month, day, 0, 0, 0);
+    return magneto_DecYear_from_datetime(year, month, day, 0, 0, 0);
 }
 
 FieldState magneto_FieldState_from_ned(const real *B_ned) {

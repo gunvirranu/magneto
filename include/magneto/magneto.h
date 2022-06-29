@@ -31,15 +31,6 @@ typedef struct {
     magneto_real year;
 } magneto_DecYear;
 
-magneto_DecYear magneto_DecYear_from_date(
-    int_fast16_t year, int_fast8_t month, int_fast8_t day,
-    int_fast8_t hour, int_fast8_t minute, int_fast8_t sec
-);
-
-magneto_DecYear magneto_DecYear_from_data(
-    int_fast16_t year, int_fast8_t month, int_fast8_t day
-);
-
 /// Earth-centered geographic coordinates
 typedef struct {
     magneto_real latitude;      ///< Geodetic latitude [deg]
@@ -54,6 +45,19 @@ typedef struct {
     magneto_real D;
     magneto_real I;
 } magneto_FieldState;
+
+// Date-time conversions
+
+magneto_DecYear magneto_DecYear_from_datetime(
+    int_fast16_t year, int_fast8_t month, int_fast8_t day,
+    int_fast8_t hour, int_fast8_t minute, int_fast8_t sec
+);
+
+magneto_DecYear magneto_DecYear_from_date(
+    int_fast16_t year, int_fast8_t month, int_fast8_t day
+);
+
+// Magnetic field conversions
 
 magneto_FieldState magneto_FieldState_from_ned(const magneto_real *B_ned);
 
