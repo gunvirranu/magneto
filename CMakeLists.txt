@@ -33,7 +33,7 @@ add_library(
 target_include_directories(
     magneto ${warning_guard}
     PUBLIC
-    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
 target_compile_features(magneto PUBLIC c_std_99)
