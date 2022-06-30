@@ -8,6 +8,7 @@
 
 const real magneto_PI = REAL(3.141592653589793238462643383279);
 const real magneto_WGS84_A = REAL(6378137.0);
+const real magneto_WGS84_B = REAL(6356752.314245);
 const real magneto_WGS84_F = (real) (1000000000.0 / 298257223563LL);
 const real magneto_WGS84_F_INV = (real) (298257223563LL / 1000000000.0);
 const real magneto_WGS84_E_SQ = (magneto_WGS84_F * (2 - magneto_WGS84_F));
@@ -68,6 +69,49 @@ DecYear magneto_DecYear_from_date(
     return magneto_DecYear_from_datetime(year, month, day, 0, 0, 0);
 }
 
+Coords magneto_Coords_from_ecef(const EcefPosition pos) {
+    Coords coords = { 0 };
+
+    // Following algorithm adapted from equations found in
+    // "Fundamentals of Spacecraft Attitude Determination and Control"
+    // by Markley & Crassidis
+    const real eps_sq = sq(magneto_WGS84_A / magneto_WGS84_B) - 1;
+    if (eps_sq == REAL(0.0)) {
+        return coords;
+    }
+    const real rho_sq = sq(pos.x) + sq(pos.y);
+    const real p = REAL(fabs)(pos.z) / eps_sq;
+    const real s = (rho_sq / (magneto_WGS84_E_SQ * eps_sq));
+    const real q = (sq(p) - sq(magneto_WGS84_B) + s);
+    if (q == REAL(0.0)) {
+        return coords;
+    }
+    const real u = (p / SQRT(q));
+    const real v = sq(magneto_WGS84_B * u) / q;
+    const real P = (27 * v * s / q);
+    const real Q = REAL(pow)(SQRT(P + 1) + SQRT(P), (REAL(2.0) / 3));
+    if (Q == REAL(0.0)) {
+        return coords;
+    }
+    const real t = (1 + Q + (1/Q)) / 6;
+    const real c = SQRT(sq(u) - 1 + (2 * t));
+    const real w = (c - u) / 2;
+    real d = SQRT(q) * (w + SQRT(SQRT(sq(t) + v) - ((u*w) + (t/2) + REAL(0.25))));
+    d = (pos.z < 0) ? -d : d;
+    const real N = (magneto_WGS84_A * SQRT(1 + (eps_sq * sq(d / magneto_WGS84_B))));
+    if (N == REAL(0.0)) {
+        return coords;
+    }
+    const real phi = REAL(asin)((eps_sq + 1) * d / N);
+    const real h = (SQRT(rho_sq) * COS(phi)) + (pos.z * SIN(phi)) - (sq(magneto_WGS84_A) / N);
+    const real lambda = REAL(atan2)(pos.y, pos.x);
+
+    coords.latitude = rad_to_deg(phi);
+    coords.longitude = rad_to_deg(lambda);
+    coords.height = h;
+    return coords;
+}
+
 EcefPosition magneto_EcefPosition_from_coords(const Coords pos) {
     EcefPosition ecef = { 0 };
 
@@ -84,9 +128,9 @@ EcefPosition magneto_EcefPosition_from_coords(const Coords pos) {
     }
     const real R_c = (magneto_WGS84_A / denom);  // Radius of curvature
 
-    ecef.vec[0] = (R_c + pos.height) * cos_lat * cos_lon;
-    ecef.vec[1] = (R_c + pos.height) * cos_lat * sin_lon;
-    ecef.vec[2] = (R_c * (1 - magneto_WGS84_E_SQ) + pos.height) * sin_lat;
+    ecef.x = (R_c + pos.height) * cos_lat * cos_lon;
+    ecef.y = (R_c + pos.height) * cos_lat * sin_lon;
+    ecef.z = (R_c * (1 - magneto_WGS84_E_SQ) + pos.height) * sin_lat;
     return ecef;
 }
 

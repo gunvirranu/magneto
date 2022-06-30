@@ -17,6 +17,8 @@ typedef double magneto_real;
 extern const magneto_real magneto_PI;
 /// Equatorial radius or semi-major axis of the WGS84 ellipse in [m]
 extern const magneto_real magneto_WGS84_A;
+/// Semi-minor axis of the WGS84 ellipsoid in [m]
+extern const magneto_real magneto_WGS84_B;
 /// Flattening of the WGS84 ellipsoid
 extern const magneto_real magneto_WGS84_F;
 /// Reciprocal flattening (1/f) of the WGS ellipsoid
@@ -46,7 +48,9 @@ typedef struct {
 } magneto_SphericalCoords;
 
 typedef struct {
-    magneto_real vec[3];
+    magneto_real x;
+    magneto_real y;
+    magneto_real z;
 } magneto_EcefPosition;
 
 // Magnetic field
@@ -78,6 +82,7 @@ magneto_DecYear magneto_DecYear_from_date(
 
 // Position conversions
 
+magneto_Coords magneto_Coords_from_ecef(magneto_EcefPosition pos);
 magneto_EcefPosition magneto_EcefPosition_from_coords(magneto_Coords pos);
 
 // Magnetic field conversions
