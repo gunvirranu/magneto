@@ -89,6 +89,7 @@ Coords magneto_Coords_from_ecef(const EcefPosition pos) {
     const real u = (p / SQRT(q));
     const real v = sq(magneto_WGS84_B * u) / q;
     const real P = (27 * v * s / q);
+    // TODO: Use `sq(cbrt(...))` for better precision
     const real Q = REAL(pow)(SQRT(P + 1) + SQRT(P), (REAL(2.0) / 3));
     if (Q == REAL(0.0)) {
         return coords;
@@ -120,16 +121,25 @@ SphericalCoords magneto_SphericalCoords_from_coords(const Coords pos) {
         .longitude = 0,
         .height = pos.height
     };
-    EcefPosition ecef_no_lon = magneto_EcefPosition_from_coords(pos_with_no_lon);
+    const EcefPosition ecef_no_lon = magneto_EcefPosition_from_coords(pos_with_no_lon);
+    const SphericalCoords partial_no_azi = magneto_SphericalCoords_from_ecef(ecef_no_lon);
 
-    const real r = HYPOT(ecef_no_lon.x, ecef_no_lon.z);
+    spherical.radius = partial_no_azi.radius;
+    spherical.polar = partial_no_azi.polar;
+    spherical.azimuth = pos.longitude;
+    return spherical;
+}
+
+SphericalCoords magneto_SphericalCoords_from_ecef(const EcefPosition pos) {
+    SphericalCoords spherical = { 0 };
+
+    const real r = HYPOT(HYPOT(pos.x, pos.y), pos.z);
     if (r == REAL(0.0)) {
         return spherical;
     }
-
     spherical.radius = r;
-    spherical.polar = rad_to_deg(REAL(asin)(ecef_no_lon.z / r));
-    spherical.azimuth = pos.longitude;
+    spherical.polar = rad_to_deg(REAL(asin)(pos.z / r));
+    spherical.azimuth = rad_to_deg(REAL(atan2)(pos.y, pos.x));
     return spherical;
 }
 

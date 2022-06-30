@@ -82,6 +82,7 @@ magneto_DecYear magneto_DecYear_from_date(
 
 magneto_Coords magneto_Coords_from_ecef(magneto_EcefPosition pos);
 magneto_SphericalCoords magneto_SphericalCoords_from_coords(magneto_Coords pos);
+magneto_SphericalCoords magneto_SphericalCoords_from_ecef(magneto_EcefPosition pos);
 magneto_EcefPosition magneto_EcefPosition_from_coords(magneto_Coords pos);
 magneto_EcefPosition magneto_EcefPosition_from_spherical(magneto_SphericalCoords pos);
 
