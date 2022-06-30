@@ -112,6 +112,27 @@ Coords magneto_Coords_from_ecef(const EcefPosition pos) {
     return coords;
 }
 
+SphericalCoords magneto_SphericalCoords_from_coords(const Coords pos) {
+    SphericalCoords spherical = { 0 };
+
+    const Coords pos_with_no_lon = {
+        .latitude = pos.latitude,
+        .longitude = 0,
+        .height = pos.height
+    };
+    EcefPosition ecef_no_lon = magneto_EcefPosition_from_coords(pos_with_no_lon);
+
+    const real r = HYPOT(ecef_no_lon.x, ecef_no_lon.z);
+    if (r == REAL(0.0)) {
+        return spherical;
+    }
+
+    spherical.radius = r;
+    spherical.polar = rad_to_deg(REAL(asin)(ecef_no_lon.z / r));
+    spherical.azimuth = pos.longitude;
+    return spherical;
+}
+
 EcefPosition magneto_EcefPosition_from_coords(const Coords pos) {
     EcefPosition ecef = { 0 };
 
@@ -122,7 +143,7 @@ EcefPosition magneto_EcefPosition_from_coords(const Coords pos) {
     const real sin_lon = SIN(lon);
     const real cos_lon = COS(lon);
 
-    const real denom = SQRT(REAL(1.0) - magneto_WGS84_E_SQ * sq(sin_lat));
+    const real denom = SQRT(1 - magneto_WGS84_E_SQ * sq(sin_lat));
     if (denom == REAL(0.0)) {
         return ecef;
     }
