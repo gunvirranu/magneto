@@ -68,6 +68,28 @@ DecYear magneto_DecYear_from_date(
     return magneto_DecYear_from_datetime(year, month, day, 0, 0, 0);
 }
 
+EcefPosition magneto_EcefPosition_from_coords(const Coords pos) {
+    EcefPosition ecef = { 0 };
+
+    const real lat = deg_to_rad(pos.latitude);
+    const real lon = deg_to_rad(pos.longitude);
+    const real sin_lat = SIN(lat);
+    const real cos_lat = COS(lat);
+    const real sin_lon = SIN(lon);
+    const real cos_lon = COS(lon);
+
+    const real denom = SQRT(REAL(1.0) - magneto_WGS84_E_SQ * sq(sin_lat));
+    if (denom == REAL(0.0)) {
+        return ecef;
+    }
+    const real R_c = (magneto_WGS84_A / denom);  // Radius of curvature
+
+    ecef.vec[0] = (R_c + pos.height) * cos_lat * cos_lon;
+    ecef.vec[1] = (R_c + pos.height) * cos_lat * sin_lon;
+    ecef.vec[2] = (R_c * (1 - magneto_WGS84_E_SQ) + pos.height) * sin_lat;
+    return ecef;
+}
+
 FieldState magneto_FieldState_from_ned(const real *B_ned) {
     FieldState field = { 0 };
     if (B_ned == NULL) {

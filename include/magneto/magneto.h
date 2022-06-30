@@ -78,7 +78,7 @@ magneto_DecYear magneto_DecYear_from_date(
 
 // Position conversions
 
-// FIXME: Add
+magneto_EcefPosition magneto_EcefPosition_from_coords(magneto_Coords pos);
 
 // Magnetic field conversions
 
