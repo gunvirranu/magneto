@@ -11,6 +11,8 @@ typedef double magneto_real;
 #define MAGNETO_REAL(x) x
 #endif
 
+// Constants
+
 /// Pi
 extern const magneto_real magneto_PI;
 /// Equatorial radius or semi-major axis of the WGS84 ellipse in [m]
@@ -22,14 +24,13 @@ extern const magneto_real magneto_WGS84_F_INV;
 /// Eccentricity squared (e^2) of the WGS84 ellipsoid
 extern const magneto_real magneto_WGS84_E_SQ;
 
-/// Convert radians to degrees
-magneto_real magneto_rad_to_deg(magneto_real rad);
-/// Convert degrees to radians
-magneto_real magneto_deg_to_rad(magneto_real deg);
+// Time
 
 typedef struct {
     magneto_real year;
 } magneto_DecYear;
+
+// Position
 
 /// Earth-centered geographic coordinates
 typedef struct {
@@ -46,16 +47,26 @@ typedef struct {
     magneto_real I;
 } magneto_FieldState;
 
+// Math
+
+/// Convert radians to degrees
+magneto_real magneto_rad_to_deg(magneto_real rad);
+/// Convert degrees to radians
+magneto_real magneto_deg_to_rad(magneto_real deg);
+
 // Date-time conversions
 
 magneto_DecYear magneto_DecYear_from_datetime(
     int_fast16_t year, int_fast8_t month, int_fast8_t day,
     int_fast8_t hour, int_fast8_t minute, int_fast8_t sec
 );
-
 magneto_DecYear magneto_DecYear_from_date(
     int_fast16_t year, int_fast8_t month, int_fast8_t day
 );
+
+// Position conversions
+
+// FIXME: Add
 
 // Magnetic field conversions
 

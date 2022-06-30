@@ -76,9 +76,9 @@ FieldState magneto_FieldState_from_ned(const real *B_ned) {
     field.B_ned[0] = B_ned[0];
     field.B_ned[1] = B_ned[1];
     field.B_ned[2] = B_ned[2];
-    field.H = REAL(hypot)(B_ned[0], B_ned[1]);
-    field.F = REAL(hypot)(field.H, B_ned[2]);
-    field.D = magneto_rad_to_deg(REAL(atan2)(B_ned[1], B_ned[0]));
-    field.I = magneto_rad_to_deg(REAL(atan2)(B_ned[2], field.H));
+    field.H = HYPOT(B_ned[0], B_ned[1]);
+    field.F = HYPOT(field.H, B_ned[2]);
+    field.D = rad_to_deg(REAL(atan2)(B_ned[1], B_ned[0]));
+    field.I = rad_to_deg(REAL(atan2)(B_ned[2], field.H));
     return field;
 }
