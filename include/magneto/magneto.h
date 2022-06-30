@@ -5,10 +5,8 @@
 
 #ifdef MAGNETO_SINGLE_PRECISION
 typedef float magneto_real;
-#define MAGNETO_REAL(x) x ## f
 #else
 typedef double magneto_real;
-#define MAGNETO_REAL(x) x
 #endif
 
 // Constants
