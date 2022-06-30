@@ -69,6 +69,11 @@ DecYear magneto_DecYear_from_date(
     return magneto_DecYear_from_datetime(year, month, day, 0, 0, 0);
 }
 
+Coords magneto_Coords_from_spherical(const SphericalCoords pos) {
+    const EcefPosition ecef = magneto_EcefPosition_from_spherical(pos);
+    return magneto_Coords_from_ecef(ecef);
+}
+
 Coords magneto_Coords_from_ecef(const EcefPosition pos) {
     Coords coords = { 0 };
 
