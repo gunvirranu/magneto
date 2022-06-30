@@ -134,6 +134,22 @@ EcefPosition magneto_EcefPosition_from_coords(const Coords pos) {
     return ecef;
 }
 
+EcefPosition magneto_EcefPosition_from_spherical(const SphericalCoords pos) {
+    EcefPosition ecef = { 0 };
+
+    const real pol = deg_to_rad(pos.polar);     // Geocentric latitude
+    const real azi = deg_to_rad(pos.azimuth);   // Longitude
+    const real sin_pol = SIN(pol);
+    const real cos_pol = COS(pol);
+    const real sin_azi = SIN(azi);
+    const real cos_azi = COS(azi);
+
+    ecef.x = (pos.radius * cos_pol * cos_azi);
+    ecef.y = (pos.radius * cos_pol * sin_azi);
+    ecef.z = (pos.radius * sin_pol);
+    return ecef;
+}
+
 FieldState magneto_FieldState_from_ned(const real *B_ned) {
     FieldState field = { 0 };
     if (B_ned == NULL) {
