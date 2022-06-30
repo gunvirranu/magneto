@@ -40,6 +40,18 @@ typedef struct {
 } magneto_Coords;
 
 typedef struct {
+    magneto_real radius;        ///< Distance from centre of WGS84 ellipsoid [m]
+    magneto_real polar;         ///< Polar angle (a.k.a. geoentric latitude) [deg]
+    magneto_real azimuth;       ///< Azimuthal angle (a.k.a. longitude) [deg]
+} magneto_SphericalCoords;
+
+typedef struct {
+    magneto_real vec[3];
+} magneto_EcefPosition;
+
+// Magnetic field
+
+typedef struct {
     magneto_real B_ned[3];
     magneto_real F;
     magneto_real H;
