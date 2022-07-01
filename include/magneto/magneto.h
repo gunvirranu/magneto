@@ -91,4 +91,16 @@ magneto_EcefPosition magneto_EcefPosition_from_spherical(magneto_SphericalCoords
 
 magneto_FieldState magneto_FieldState_from_ned(const magneto_real *B_ned);
 
+void magneto_convert_vector_ned_to_ecef(
+    magneto_Coords pos,
+    const magneto_real *ned,
+    magneto_real *ecef
+);
+void magneto_convert_vector_ecef_to_ned(
+    magneto_Coords pos,
+    const magneto_real *ecef,
+    magneto_real *ned
+);
+void magneto_matrix_ned_to_ecef(magneto_Coords pos, magneto_real *matrix);
+
 #endif  // MAGNETO_MAGNETO_H

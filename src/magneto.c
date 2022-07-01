@@ -186,7 +186,7 @@ EcefPosition magneto_EcefPosition_from_spherical(const SphericalCoords pos) {
     return ecef;
 }
 
-FieldState magneto_FieldState_from_ned(const real *B_ned) {
+FieldState magneto_FieldState_from_ned(const real *const B_ned) {
     FieldState field = { 0 };
     if (B_ned == NULL) {
         return field;
@@ -199,4 +199,61 @@ FieldState magneto_FieldState_from_ned(const real *B_ned) {
     field.D = rad_to_deg(REAL(atan2)(B_ned[1], B_ned[0]));
     field.I = rad_to_deg(REAL(atan2)(B_ned[2], field.H));
     return field;
+}
+
+void magneto_convert_vector_ned_to_ecef(
+    const magneto_Coords pos,
+    const magneto_real *const ned,
+    magneto_real *const ecef
+) {
+    if ((ned == NULL) || (ecef == NULL)) {
+        return;
+    }
+
+    magneto_real A[9] = { 0 };
+    magneto_matrix_ned_to_ecef(pos, A);
+    // Standard matrix multiplication
+    ecef[0] = (A[0] * ned[0]) + (A[1] * ned[1]) + (A[2] * ned[2]);
+    ecef[1] = (A[3] * ned[0]) + (A[4] * ned[1]) + (A[5] * ned[2]);
+    ecef[2] = (A[6] * ned[0]) + (A[7] * ned[1]) + (A[8] * ned[2]);
+}
+
+void magneto_convert_vector_ecef_to_ned(
+    const magneto_Coords pos,
+    const magneto_real *const ecef,
+    magneto_real *const ned
+) {
+    if ((ecef == NULL) || (ned == NULL)) {
+        return;
+    }
+
+    magneto_real A_T[9] = { 0 };
+    magneto_matrix_ned_to_ecef(pos, A_T);
+    // Standard matrix multiplication
+    ned[0] = (A_T[0] * ecef[0]) + (A_T[3] * ecef[1]) + (A_T[6] * ecef[2]);
+    ned[1] = (A_T[1] * ecef[0]) + (A_T[4] * ecef[1]) + (A_T[7] * ecef[2]);
+    ned[2] = (A_T[2] * ecef[0]) + (A_T[5] * ecef[1]) + (A_T[8] * ecef[2]);
+}
+
+void magneto_matrix_ned_to_ecef(const Coords pos, real *const matrix) {
+    if (matrix == NULL) {
+        return;
+    }
+
+    const real lat = deg_to_rad(pos.latitude);
+    const real lon = deg_to_rad(pos.longitude);
+    const real sin_lat = SIN(lat);
+    const real cos_lat = COS(lat);
+    const real sin_lon = SIN(lon);
+    const real cos_lon = COS(lon);
+
+    matrix[0] = (-sin_lat * cos_lon);
+    matrix[1] = (-sin_lon);
+    matrix[2] = (-cos_lat * cos_lon);
+    matrix[3] = (-sin_lat * sin_lon);
+    matrix[4] = cos_lon;
+    matrix[5] = (-cos_lat * sin_lon);
+    matrix[6] = cos_lat;
+    matrix[7] = 0;
+    matrix[8] = (-sin_lat);
 }
