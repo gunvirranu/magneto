@@ -28,4 +28,10 @@ typedef struct {
     const magneto_ModelCoeffs last_secular;
 } magneto_Model;
 
+magneto_FieldState eval_mag_field(
+    const magneto_Model *model,
+    magneto_DecYear t,
+    magneto_Coords coords
+);
+
 #endif  // MAGNETO_MODEL_H
