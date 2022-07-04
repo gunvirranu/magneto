@@ -4,6 +4,7 @@
 // General macros
 
 #define STATIC_ASSERT(COND, MSG) typedef char static_assertion_##MSG[(COND) ? 1 : -1]
+#define MAX_OF(a, b) (((a) > (b)) ? (a) : (b))
 
 // Support single and double precision floating point
 
