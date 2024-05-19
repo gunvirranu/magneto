@@ -17,14 +17,14 @@ static inline real calc_K(const real n, const real m) {
 
 static void rotate_vector_spherical_to_ned(
     const Coords pos,
-    const SphericalCoords sph,
-    const real *const B_rad_theta_phi,
+    const SphericalCoords pos_sph,
+    const SphericalCoords B_spherical,
     real *const B_ned
 ) {
-    const real B_r = B_rad_theta_phi[0];
-    const real B_theta = B_rad_theta_phi[1];
-    const real B_phi = B_rad_theta_phi[2];
-    const real eps = deg_to_rad(sph.polar - pos.latitude);
+    const real B_r = B_spherical.radius;
+    const real B_theta = B_spherical.azimuth;
+    const real B_phi = B_spherical.polar;
+    const real eps = deg_to_rad(pos_sph.polar - pos.latitude);
     const real sin_eps = SIN(eps);
     const real cos_eps = COS(eps);
     B_ned[0] = (-B_theta * cos_eps) - (B_r * sin_eps);
@@ -45,7 +45,7 @@ static inline void calc_g_and_h(
     const bool is_last_submodel = ((i_model + 1U) >= model->num_models);
     const size_t idx_coeff = MAGNETO_CALC_INDEX(n, m);
 
-    printf("(%d, %d) -> %d\n", n, m, idx_coeff);
+    printf("(%d, %d) -> %d\n", (int) n, (int) m, (int) idx_coeff);
 
     real g_dot = 0;
     real h_dot = 0;
@@ -70,20 +70,20 @@ static inline void calc_g_and_h(
 /// @param[in]  model           Spherical harmonic model and coefficients
 /// @param[in]  i_model         Index of which sub-model to use
 /// @param[in]  t               Time delta into i-th sub-model in years
-/// @param[in]  rad_theta_phi   Geocentric spherical coordinates
-/// @param[out] B_rad_theta_phi Output vector in spherical reference frame
+/// @param[in]  pos             Geocentric spherical coordinates
+/// @param[out] B_spherical     Output vector in spherical reference frame
 static void eval_spherical_expansion(
     const magneto_Model *const model,
     const size_t i_model,
     const real t,
-    const real *const rad_theta_phi,
-    real *const B_rad_theta_phi
+    const SphericalCoords pos,
+    SphericalCoords *const B_spherical
 ) {
-    const real theta = deg_to_rad(B_rad_theta_phi[1]);
-    const real phi = deg_to_rad(B_rad_theta_phi[2]);
+    const real theta = deg_to_rad(pos.azimuth);
+    const real phi = deg_to_rad(pos.polar);
     const real sin_theta = SIN(theta);
     const real cos_theta = COS(theta);
-    const real normed_r = (magneto_WGS84_A / rad_theta_phi[0]);
+    const real normed_r = (magneto_WGS84_A / pos.radius);
 
     // Output vector
     real B_r = 0;       ///< Bz
@@ -109,8 +109,8 @@ static void eval_spherical_expansion(
         real dP_nprev_m = 0;
         real dP_nprevprev_m = 0;
 
-        const real sin_mphi = SIN(m * phi);
-        const real cos_mphi = COS(m * phi);
+        const real sin_mphi = SIN((real) m * phi);
+        const real cos_mphi = COS((real) m * phi);
 
         // Condition is enforced by loop bounds: (m <= n)
         for (size_t n = MAX_OF(m, 1U); n <= model->nm_max; ++n) {
@@ -150,27 +150,26 @@ static void eval_spherical_expansion(
     if (sin_theta != 0) {
         B_phi /= sin_theta;
     }
-    B_rad_theta_phi[0] = B_r;
-    B_rad_theta_phi[1] = B_theta;
-    B_rad_theta_phi[2] = B_phi;
+    B_spherical->radius = B_r;
+    B_spherical->azimuth = B_theta;
+    B_spherical->polar = B_phi;
 }
 
-magneto_FieldState eval_mag_field(
+magneto_FieldState eval_field(
     const magneto_Model *const model,
     const magneto_DecYear t,
     const magneto_Coords coords
 ) {
     const SphericalCoords sph = magneto_SphericalCoords_from_coords(coords);
-    const real delta_t = t.year - model->epoch.year;
-    const real rad_theta_phi[] = { sph.radius, sph.azimuth, sph.polar };
+    const real delta_t = (t.year - model->epoch.year);
 
-    // Evaluate magnetic field model
-    real B_rad_theta_phi[3] = { 0 };
-    eval_spherical_expansion(model, 0, delta_t, rad_theta_phi, B_rad_theta_phi);
+    // Evaluate magnetic field model in spherical coordinates
+    SphericalCoords B_spherical = { 0 };
+    eval_spherical_expansion(model, 0, delta_t, sph, &B_spherical);
 
-    // Rotate magentic field vector from geocentric to geodeetic NED frame
+    // Rotate magnetic field vector from geocentric to geodetic NED frame
     real B_ned[3];
-    rotate_vector_spherical_to_ned(coords, sph, B_rad_theta_phi, B_ned);
+    rotate_vector_spherical_to_ned(coords, sph, B_spherical, B_ned);
 
     // Compute other field quantities
     const FieldState B = magneto_FieldState_from_ned(B_ned);

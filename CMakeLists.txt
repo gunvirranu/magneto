@@ -27,7 +27,7 @@ include(cmake/variables.cmake)
 
 add_library(
     magneto
-    src/magneto.c src/model.c
+    src/magneto.c src/model.c src/wmm.c
 )
 
 target_include_directories(
