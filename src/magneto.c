@@ -15,35 +15,24 @@ const real magneto_WGS84_E_SQ = (magneto_WGS84_F * (2 - magneto_WGS84_F));
 
 static const real RAD_PER_DEG = REAL(0.017453292519943295769);
 static const real DEG_PER_RAD = REAL(57.29577951308232087680);
-static const int DAYS_IN_YEAR = 365;
 
-static bool is_leap_year(const int year) {
-    return ((year % 4) == 0) && ((year % 100) != 0) && ((year % 400) == 0);
-}
+static const uint16_t YEAR_MIN = 1583U;     ///< Beginning of valid Gregorian calendar
+static const uint16_t YEAR_MAX = 9999U;
+static const uint8_t MONTH_MIN = 1U;
+static const uint8_t MONTH_MAX = 12U;
+static const uint8_t DAY_MIN = 1U;
+/// Number of days in each month, indexed by month (0 is unused)
+static const uint8_t DAY_MAX[13U] = { 0U, 31U, 28U, 31U, 30U, 31U, 30U, 31U, 31U, 30U, 31U, 30U, 31U };
+static const uint8_t HOUR_MIN = 0U;
+static const uint8_t HOUR_MAX = 24U;
+static const uint8_t MINUTE_MIN = 0U;
+static const uint8_t MINUTE_MAX = 59U;
+static const uint8_t SEC_MIN = 0U;
+static const uint8_t SEC_MAX = 60U;
 
-static real calc_day_of_year(
-    const int year, const int month, const int day,
-    const int hour, const int minute, const int sec
-) {
-    // Cumulative number of days in year at start of month
-    const int month_days[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
-    // Check for invalid month only b/c it's used for indexing
-    if ((month < 1) || (month > 12)) {
-        return 0;
-    }
-    // Month is now guaranteed to be 1 - 12
-    real doy = month_days[month - 1];
-    // Add an extra day for Feb. in a leap year
-    if ((month > 2) && is_leap_year(year)) {
-        doy += 1;
-    }
-    // Add day and time simply with no checks
-    doy += day;
-    doy += (hour / (real) 24);
-    doy += (minute / (real) 1440);
-    doy += (sec / (real) 86400);
-    return doy;
-}
+static const uint16_t DAYS_IN_YEAR = 365U;  ///< Not in a leap year
+/// Cumulative number of days in year at start of month, index by month (0 is unused)
+static const uint16_t DAY_PER_MONTH[13U] = { 0U, 0U, 31U, 59U, 90U, 120U, 151U, 181U, 212U, 243U, 273U, 304U, 334U };
 
 real magneto_rad_to_deg(const real rad) {
     return rad * DEG_PER_RAD;
@@ -53,20 +42,73 @@ real magneto_deg_to_rad(const real deg) {
     return deg * RAD_PER_DEG;
 }
 
-DecYear magneto_DecYear_from_datetime(
-    int_fast16_t year, int_fast8_t month, int_fast8_t day,
-    int_fast8_t hour, int_fast8_t minute, int_fast8_t sec
-) {
-    const real doy = calc_day_of_year(year, month, day, hour, minute, sec);
-    const int days_in_year = (DAYS_IN_YEAR + (is_leap_year(year) ? 1 : 0));
-    const real year_frac = (doy - 1) / days_in_year;
-    return (DecYear) { .year = ((real) year) + year_frac };
+/// Based on Gregorian calendar, assumes valid `year`
+static bool is_leap_year(const uint16_t year) {
+    const bool div_4   = (year % 4U)   == 0U;
+    const bool div_100 = (year % 100U) == 0U;
+    const bool div_400 = (year % 400U) == 0U;
+    return (div_4 && !div_100) || div_400;
 }
 
-DecYear magneto_DecYear_from_date(
-    int_fast16_t year, int_fast8_t month, int_fast8_t day
-) {
-    return magneto_DecYear_from_datetime(year, month, day, 0, 0, 0);
+/// Assumes valid `year`
+static uint16_t days_in_year(const uint16_t year) {
+    // Add extra day for February 29th in leap years
+    return (DAYS_IN_YEAR + (is_leap_year(year) ? 1U : 0U));
+}
+
+/// Assumes valid `year` and `month`
+static uint8_t days_in_month(const uint16_t year, const uint8_t month)
+{
+    // Check month b/c it's used for indexing
+    uint8_t day = DAY_MAX[(month < ARRAY_SIZE(DAY_MAX)) ? month : 0U];
+    // Add extra day for February 29th in leap years
+    if ((month == 2U) && is_leap_year(year))
+    {
+        day += 1U;
+    }
+    return day;
+}
+
+/// Mostly assumes a valid `Datetime`
+static real day_of_year(const DateTime t) {
+    // Check for invalid month only b/c it's used for indexing
+    real doy = DAY_PER_MONTH[(t.month < ARRAY_SIZE(DAY_PER_MONTH)) ? t.month : 0U];
+    // Add an extra day after February 29th in a leap year
+    if ((t.month > 2U) && is_leap_year(t.year)) {
+        doy += REAL(1.0);
+    }
+    // Add day and time simply with no checks
+    doy += (real) t.day;
+    doy += (t.hour / REAL(24.0));
+    doy += (t.minute / REAL(1440.0));
+    doy += (t.sec / REAL(86400.0));
+    return doy;
+}
+
+bool magneto_DateTime_is_valid(const DateTime t) {
+    bool valid = true;
+    valid &= (t.year >= YEAR_MIN) && (t.year <= YEAR_MAX);
+    valid &= (t.month >= MONTH_MIN) && (t.month <= MONTH_MAX);
+    valid &= (t.day >= DAY_MIN) && (t.day <= days_in_month(t.year, t.month));
+    valid &= (t.hour >= HOUR_MIN) && (t.hour <= HOUR_MAX);
+    valid &= (t.minute >= MINUTE_MIN) && (t.minute <= MINUTE_MAX);
+    valid &= (t.sec >= SEC_MIN) && (t.sec <= SEC_MAX);
+    return valid;
+}
+
+bool magneto_DecYear_is_valid(const DecYear t) {
+    return (t.year >= (real) YEAR_MIN) && (t.year <= (real) YEAR_MAX);
+}
+
+DecYear magneto_DecYear_from_date_time(const DateTime t) {
+    if (!magneto_DateTime_is_valid(t)) {
+        return (DecYear) { .year = REAL(0.0) };
+    }
+    const real doy = day_of_year(t);
+    const real frac_year = (doy - REAL(1.0)) / days_in_year(t.year);
+    return (DecYear) {
+        .year = (real) t.year + frac_year
+    };
 }
 
 Coords magneto_Coords_from_spherical(const SphericalCoords pos) {
@@ -135,7 +177,7 @@ SphericalCoords magneto_SphericalCoords_from_coords(const Coords pos) {
     return spherical;
 }
 
-SphericalCoords magneto_SphericalCoords_from_ecef(const EcefPosition pos) {
+SphericalCoords  magneto_SphericalCoords_from_ecef(const EcefPosition pos) {
     SphericalCoords spherical = { 0 };
 
     const real r = HYPOT(HYPOT(pos.x, pos.y), pos.z);

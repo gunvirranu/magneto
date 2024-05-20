@@ -4,7 +4,8 @@
 // General macros
 
 #define STATIC_ASSERT(COND, MSG) typedef char static_assertion_##MSG[(COND) ? 1 : -1]
-#define MAX_OF(a, b) (((a) > (b)) ? (a) : (b))
+#define MAX_OF(a, b)    (((a) > (b)) ? (a) : (b))
+#define ARRAY_SIZE(x)   (sizeof(x) / sizeof((x)[0]))
 
 // Support single and double precision floating point
 
@@ -28,6 +29,7 @@
 
 typedef NS(real)            real;
 typedef NS(DecYear)         DecYear;
+typedef NS(DateTime)        DateTime;
 typedef NS(Coords)          Coords;
 typedef NS(SphericalCoords) SphericalCoords;
 typedef NS(EcefPosition)    EcefPosition;

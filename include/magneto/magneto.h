@@ -2,7 +2,9 @@
 #define MAGNETO_MAGNETO_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
+// Default is double-precision if not defined
 #ifdef MAGNETO_SINGLE_PRECISION
 typedef float magneto_real;
 #else
@@ -11,40 +13,52 @@ typedef double magneto_real;
 
 // Constants
 
-/// Pi
+/// [ ] Pi
 extern const magneto_real magneto_PI;
-/// Equatorial radius or semi-major axis of the WGS84 ellipse in [m]
+/// [m] Equatorial radius or semi-major axis of the WGS84 ellipse
 extern const magneto_real magneto_WGS84_A;
-/// Semi-minor axis of the WGS84 ellipsoid in [m]
+/// [m] Semi-minor axis of the WGS84 ellipsoid
 extern const magneto_real magneto_WGS84_B;
-/// Flattening of the WGS84 ellipsoid
+/// [ ] Flattening of the WGS84 ellipsoid
 extern const magneto_real magneto_WGS84_F;
-/// Reciprocal flattening (1/f) of the WGS ellipsoid
+/// [ ] Reciprocal flattening (1/f) of the WGS ellipsoid
 extern const magneto_real magneto_WGS84_F_INV;
-/// Eccentricity squared (e^2) of the WGS84 ellipsoid
+/// [ ] Eccentricity squared (e^2) of the WGS84 ellipsoid
 extern const magneto_real magneto_WGS84_E_SQ;
 
 // Time
 
 typedef struct {
-    magneto_real year;
+    magneto_real year;  ///< [year] Decimal year with fractional day & time, in [1583, 9999]
 } magneto_DecYear;
+
+/// Follows ISO8601, based on Gregorian calendar
+typedef struct {
+    uint16_t year;  ///< [year]     Integer Gregorian year in [1583, 9999]
+    uint8_t month;  ///< [month]    Month of year in [1, 12], starting at January
+    uint8_t day;    ///< [day]      Day of month in [1, 31]
+    uint8_t hour;   ///< [hour]     Hour of day in [0, 24]
+    uint8_t minute; ///< [min]      Minute of hour in [0, 59]
+    uint8_t sec;    ///< [sec]      Second in [0, 60]
+} magneto_DateTime;
 
 // Position
 
-/// Earth-centered geographic coordinates
+/// Earth-centered geographic coordinates (geodetic)
 typedef struct {
-    magneto_real latitude;      ///< Geodetic latitude [deg]
-    magneto_real longitude;     ///< Longitude [deg]
-    magneto_real height;        ///< Height above WGS84 reference ellipsoid [m]
+    magneto_real latitude;      ///< [deg]  Geodetic latitude
+    magneto_real longitude;     ///< [deg]  Longitude
+    magneto_real height;        ///< [m]    Height above WGS84 reference ellipsoid
 } magneto_Coords;
 
+/// Earth-centered spherical coordinates (geocentric)
 typedef struct {
-    magneto_real radius;        ///< Distance from centre of WGS84 ellipsoid [m]
-    magneto_real polar;         ///< Polar angle (a.k.a. geoentric latitude) [deg]
-    magneto_real azimuth;       ///< Azimuthal angle (a.k.a. longitude) [deg]
+    magneto_real polar;         ///< [deg]  Polar angle (a.k.a. geoentric latitude)
+    magneto_real azimuth;       ///< [deg]  Azimuthal angle (a.k.a. longitude)
+    magneto_real radius;        ///< [m]    Distance from centre of WGS84 ellipsoid
 } magneto_SphericalCoords;
 
+/// Earth-centered cartesian coordinates (TODO: Define axes)
 typedef struct {
     magneto_real x;
     magneto_real y;
@@ -70,20 +84,20 @@ magneto_real magneto_deg_to_rad(magneto_real deg);
 
 // Date-time conversions
 
-magneto_DecYear magneto_DecYear_from_datetime(
-    int_fast16_t year, int_fast8_t month, int_fast8_t day,
-    int_fast8_t hour, int_fast8_t minute, int_fast8_t sec
-);
-magneto_DecYear magneto_DecYear_from_date(
-    int_fast16_t year, int_fast8_t month, int_fast8_t day
-);
+bool magneto_DateTime_is_valid(magneto_DateTime t);
+bool magneto_DecYear_is_valid(magneto_DecYear t);
+
+magneto_DecYear magneto_DecYear_from_date_time(magneto_DateTime t);
+// magneto_DateTime magneto_DateTime_from_dec_year(magneto_DecYear t);
 
 // Position conversions
 
 magneto_Coords magneto_Coords_from_spherical(magneto_SphericalCoords pos);
 magneto_Coords magneto_Coords_from_ecef(magneto_EcefPosition pos);
+
 magneto_SphericalCoords magneto_SphericalCoords_from_coords(magneto_Coords pos);
 magneto_SphericalCoords magneto_SphericalCoords_from_ecef(magneto_EcefPosition pos);
+
 magneto_EcefPosition magneto_EcefPosition_from_coords(magneto_Coords pos);
 magneto_EcefPosition magneto_EcefPosition_from_spherical(magneto_SphericalCoords pos);
 

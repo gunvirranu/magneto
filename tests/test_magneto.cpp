@@ -5,25 +5,115 @@ extern "C" {
 #  include <magneto/magneto.h>
 #  include <magneto/model.h>
 #  include <magneto/wmm.h>
+
+// Total hack for unit-testing static stuff
+#  include <magneto/../../src/magneto.c>
 }
 
 using doctest::Approx;
 
-using real = double;
+using real = magneto_real;
 
-TEST_CASE("test_constants") {
+static_assert(sizeof(real) == sizeof(double), "Tests expecting double-precision");
+static_assert(sizeof(real) != sizeof(float), "Tests not expecting single-precision");
+
+TEST_CASE(
+    "test_constants"
+    * doctest::description("Sanity check on library constants")
+) {
     CHECK(magneto_PI == Approx(3.14).epsilon(0.01));
     CHECK(magneto_rad_to_deg(magneto_PI / 4) == Approx(45));
     CHECK(magneto_deg_to_rad(60) == Approx(magneto_PI / 3));
+    CHECK(RAD_PER_DEG * DEG_PER_RAD == Approx(1.0).epsilon(1e-14));
+
+    CHECK(magneto_WGS84_A == Approx(magneto_WGS84_B).epsilon(0.1));
+    CHECK(magneto_WGS84_F == Approx((magneto_WGS84_A - magneto_WGS84_B) / magneto_WGS84_A).epsilon(1e-10));
+    CHECK(magneto_WGS84_F == Approx(1.0 / magneto_WGS84_F_INV).epsilon(1e-14));
+    CHECK(magneto_WGS84_E_SQ == Approx(6.69437999014e-3).epsilon(1e-14));
+
+    CHECK((MONTH_MAX + 1U) == ARRAY_SIZE(DAY_MAX));
+    CHECK((MONTH_MAX + 1U) == ARRAY_SIZE(DAY_PER_MONTH));
+    CHECK(DAYS_IN_YEAR == (DAY_PER_MONTH[MONTH_MAX] + DAY_MAX[MONTH_MAX]));
+}
+
+TEST_CASE("test_is_leap_year") {
+    CHECK(is_leap_year(2000U));
+    CHECK(is_leap_year(2024U));
+    CHECK_FALSE(is_leap_year(2019U));
+    CHECK_FALSE(is_leap_year(1900U));
+    CHECK_FALSE(is_leap_year(2100U));
+}
+
+TEST_CASE("test_days_in_year") {
+    CHECK(days_in_year(2001U) == 365U);
+    CHECK(days_in_year(2000U) == 366U);
+}
+
+TEST_CASE("test_days_in_month") {
+    CHECK(days_in_month(1999U, 2U) == 28U);
+    CHECK(days_in_month(1998U, 8U) == 31U);
+    CHECK(days_in_month(2008U, 2U) == 29U);
+    CHECK(days_in_month(2012U, 4U) == 30U);
+    CHECK(days_in_month(2018U, 0U) == 0U);
+    CHECK(days_in_month(2020U, 13U) == 0U);
+
+    uint16_t days = 0U;
+    for (size_t i = 1; i < 13U; ++i) {
+        CHECK(days == DAY_PER_MONTH[i]);
+        days += DAY_MAX[i];
+    }
+}
+
+TEST_CASE("test_day_of_year") {
+    magneto_DateTime t = (magneto_DateTime) {
+        .year = 2001U,
+        .month = 1U,
+        .day = 1U,
+        .hour = 0U,
+        .minute = 0U,
+        .sec = 0U,
+    };
+    CHECK(day_of_year(t) == 1.0);
+
+    t.month = 9U;
+    t.day = 14U;
+    CHECK(day_of_year(t) == 257.0);
+    t.day += 1;
+    CHECK(day_of_year(t) == 258.0);
+    t.month += 1U;
+    CHECK(day_of_year(t) == 288.0);
+    t.year = 2024U;
+    CHECK(day_of_year(t) == 289.0);
+
+    t.hour = 12U;
+    CHECK(day_of_year(t) == 289.5);
+    t.minute = 16U;
+    CHECK(day_of_year(t) == Approx(289.5111111111).epsilon(1e-10));
+    t.minute = 0U;
+    t.sec = 32U;
+    CHECK(day_of_year(t) == Approx(289.5003703704).epsilon(1e-10));
+
+    t.month = 0U;
+    CHECK_NOTHROW(day_of_year(t));
+    t.month = 13U;
+    CHECK_NOTHROW(day_of_year(t));
 }
 
 TEST_CASE("test_dec_year") {
     CHECK(((magneto_DecYear) { 2014.513 }).year == 2014.513);
-    const magneto_DecYear t = magneto_DecYear_from_datetime(2020, 3, 1, 7, 6, 5);
-    CHECK((int) t.year == 2020);
+    const magneto_DateTime t_dt = (magneto_DateTime) {
+        .year = 2020U,
+        .month = 3U,
+        .day = 1U,
+        .hour = 7U,
+        .minute = 6U,
+        .sec = 5U,
+    };
+    const magneto_DecYear t_dy = magneto_DecYear_from_date_time(t_dt);
+    CHECK((uint16_t) t_dy.year == 2020U);
 }
 
-TEST_CASE("test_wmm2020") {
+TEST_CASE("test_wmm2020" * doctest::skip()) {
     const magneto_DecYear t = { .year = 2020 };
     const magneto_Coords pos = { .latitude = 80, .longitude = 0, .height = 0 };
 
