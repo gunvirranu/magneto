@@ -15,7 +15,7 @@ using doctest::Approx;
 using real = magneto_real;
 
 static_assert(sizeof(real) == sizeof(double), "Tests expecting double-precision");
-static_assert(sizeof(real) != sizeof(float), "Tests not expecting single-precision");
+static_assert(sizeof(real) != sizeof(float), "Tests not expecting single-precision just yet");
 
 TEST_CASE(
     "test_constants"
@@ -97,6 +97,75 @@ TEST_CASE("test_day_of_year") {
     CHECK_NOTHROW(day_of_year(t));
     t.month = 13U;
     CHECK_NOTHROW(day_of_year(t));
+}
+
+TEST_CASE("test_date_time_is_valid") {
+    magneto_DateTime t = (magneto_DateTime) {
+        .year = 2024U,
+        .month = 5U,
+        .day = 20U,
+        .hour = 23U,
+        .minute = 48U,
+        .sec = 34U,
+    };
+    CHECK(magneto_DateTime_is_valid(t));
+
+    t.year = 1582U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.year = 10000U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.year = 2071U;
+    CHECK(magneto_DateTime_is_valid(t));
+
+    t.month = 0U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.month = 13U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.month = 11U;
+    CHECK(magneto_DateTime_is_valid(t));
+
+    t.day = 0U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.day = 31U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.month = 8U;
+    CHECK(magneto_DateTime_is_valid(t));
+
+    t.year = 2032U;
+    t.month = 2U;
+    t.day = 29U;
+    CHECK(magneto_DateTime_is_valid(t));
+    t.year = 2079U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.day = 28U;
+    CHECK(magneto_DateTime_is_valid(t));
+
+    t.hour = 25U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.hour = 13U;
+    CHECK(magneto_DateTime_is_valid(t));
+
+    t.minute = 60U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.minute = 59U;
+    CHECK(magneto_DateTime_is_valid(t));
+
+    t.sec = 71U;
+    CHECK_FALSE(magneto_DateTime_is_valid(t));
+    t.sec = 60U;
+    CHECK(magneto_DateTime_is_valid(t));
+}
+
+TEST_CASE("test_dec_year_is_valid") {
+    magneto_DecYear t;
+    t.year = REAL(1987.4);
+    CHECK(magneto_DecYear_is_valid(t));
+    t.year = REAL(1582.9);
+    CHECK_FALSE(magneto_DecYear_is_valid(t));
+    t.year = REAL(10000.1);
+    CHECK_FALSE(magneto_DecYear_is_valid(t));
+    t.year = REAL(2101.0);
+    CHECK(magneto_DecYear_is_valid(t));
 }
 
 TEST_CASE("test_dec_year") {

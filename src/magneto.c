@@ -87,12 +87,12 @@ static real day_of_year(const DateTime t) {
 
 bool magneto_DateTime_is_valid(const DateTime t) {
     bool valid = true;
-    valid &= (t.year >= YEAR_MIN) && (t.year <= YEAR_MAX);
-    valid &= (t.month >= MONTH_MIN) && (t.month <= MONTH_MAX);
-    valid &= (t.day >= DAY_MIN) && (t.day <= days_in_month(t.year, t.month));
-    valid &= (t.hour >= HOUR_MIN) && (t.hour <= HOUR_MAX);
-    valid &= (t.minute >= MINUTE_MIN) && (t.minute <= MINUTE_MAX);
-    valid &= (t.sec >= SEC_MIN) && (t.sec <= SEC_MAX);
+    valid &= (YEAR_MIN <= t.year) && (t.year <= YEAR_MAX);
+    valid &= (MONTH_MIN <= t.month) && (t.month <= MONTH_MAX);
+    valid &= (DAY_MIN <= t.day) && (t.day <= days_in_month(t.year, t.month));
+    valid &= (HOUR_MIN <= t.hour) && (t.hour <= HOUR_MAX);
+    valid &= (MINUTE_MIN <= t.minute) && (t.minute <= MINUTE_MAX);
+    valid &= (SEC_MIN <= t.sec) && (t.sec <= SEC_MAX);
     return valid;
 }
 
@@ -271,7 +271,7 @@ void magneto_convert_vector_ecef_to_ned(
 
     magneto_real A_T[9] = { 0 };
     magneto_matrix_ned_to_ecef(pos, A_T);
-    // Standard matrix multiplication
+    // Standard matrix multiplication, transposed
     ned[0] = (A_T[0] * ecef[0]) + (A_T[3] * ecef[1]) + (A_T[6] * ecef[2]);
     ned[1] = (A_T[1] * ecef[0]) + (A_T[4] * ecef[1]) + (A_T[7] * ecef[2]);
     ned[2] = (A_T[2] * ecef[0]) + (A_T[5] * ecef[1]) + (A_T[8] * ecef[2]);
