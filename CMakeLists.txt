@@ -9,7 +9,7 @@ endif()
 project(
     magneto
     VERSION 0.0.0
-    DESCRIPTION "A portable C library for geomagnetic models"
+    DESCRIPTION "A portable & embedded C library for geomagnetic models"
     HOMEPAGE_URL "https://github.com/gunvirranu/magneto"
     LANGUAGES C
 )
