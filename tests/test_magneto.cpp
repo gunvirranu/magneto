@@ -168,8 +168,19 @@ TEST_CASE("test_dec_year_is_valid") {
     CHECK(magneto_DecYear_is_valid(t));
 }
 
-TEST_CASE("test_dec_year") {
-    CHECK(((magneto_DecYear) { 2014.513 }).year == 2014.513);
+TEST_CASE("test_zero_dec_year_date_time") {
+    const magneto_DateTime t0_dt = {};
+    const magneto_DecYear  t0_dy = {};
+
+    CHECK(t0_dy.year == 0.0);
+    CHECK_FALSE(magneto_DateTime_is_valid(t0_dt));
+    CHECK_FALSE(magneto_DecYear_is_valid(t0_dy));
+
+    const magneto_DecYear t1_dy = magneto_DecYear_from_date_time(t0_dt);
+    CHECK(t1_dy.year == t0_dy.year);
+}
+
+TEST_CASE("test_dec_year_from_date_time") {
     const magneto_DateTime t_dt = (magneto_DateTime) {
         .year = 2020U,
         .month = 3U,
@@ -182,7 +193,7 @@ TEST_CASE("test_dec_year") {
     CHECK((uint16_t) t_dy.year == 2020U);
 }
 
-TEST_CASE("test_wmm2020" * doctest::skip()) {
+TEST_CASE("test_wmm2020") {
     const magneto_DecYear t = { .year = 2020 };
     const magneto_Coords pos = { .latitude = 80, .longitude = 0, .height = 0 };
 
