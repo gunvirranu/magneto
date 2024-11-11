@@ -29,7 +29,7 @@ extern const magneto_real magneto_WGS84_E_SQ;
 // Time
 
 typedef struct {
-    magneto_real year;  ///< [year] Decimal year with fractional day & time, in [1583, 9999]
+    magneto_real year;  ///< [year] Decimal year with fractional day & time in [1583, 9999]
 } magneto_DecYear;
 
 /// Follows ISO8601, based on Gregorian calendar
@@ -37,9 +37,9 @@ typedef struct {
     uint16_t year;  ///< [year]     Integer Gregorian year in [1583, 9999]
     uint8_t month;  ///< [month]    Month of year in [1, 12], starting at January
     uint8_t day;    ///< [day]      Day of month in [1, 31]
-    uint8_t hour;   ///< [hour]     Hour of day in [0, 24]
-    uint8_t minute; ///< [min]      Minute of hour in [0, 59]
-    uint8_t sec;    ///< [sec]      Second in [0, 60]
+    uint8_t hour;   ///< [hour]     Hour of day in [0, 24)
+    uint8_t minute; ///< [min]      Minute of hour in [0, 60)
+    uint8_t sec;    ///< [sec]      Second in [0, 60)
 } magneto_DateTime;
 
 // Position
@@ -88,7 +88,7 @@ bool magneto_DateTime_is_valid(magneto_DateTime t);
 bool magneto_DecYear_is_valid(magneto_DecYear t);
 
 magneto_DecYear magneto_DecYear_from_date_time(magneto_DateTime t);
-// magneto_DateTime magneto_DateTime_from_dec_year(magneto_DecYear t);
+// magneto_DateTime magneto_DateTime_from_dec_year(magneto_DecYear t);  TODO: Do we need this?
 
 // Position conversions
 

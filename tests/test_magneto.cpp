@@ -191,9 +191,33 @@ TEST_CASE("test_dec_year_from_date_time") {
     };
     const magneto_DecYear t_dy = magneto_DecYear_from_date_time(t_dt);
     CHECK((uint16_t) t_dy.year == 2020U);
+
+    // FIXME: more tests
 }
 
-TEST_CASE("test_wmm2020") {
+// FIXME: test `magneto_Coords_from_spherical`
+// FIXME: test `magneto_Coords_from_ecef`
+// FIXME: test `magneto_SphericalCoords_from_coords`
+// FIXME: test `magneto_SphericalCoords_from_ecef`
+// FIXME: test `magneto_EcefPosition_from_coords`
+// FIXME: test `magneto_EcefPosition_from_spherical`
+// FIXME: test `magneto_FieldState_from_ned`
+// FIXME: test `magneto_convert_vector_ned_to_ecef`
+// FIXME: test `magneto_convert_vector_ecef_to_ned`
+// FIXME: test `magneto_matrix_ned_to_ecef`
+
+// FIXME: test `model.c`
+
+TEST_CASE("test_wmm2020_model_definition") {
+    CHECK(magneto_MODEL_WMM2020.epoch.year == 2020);
+    CHECK(magneto_MODEL_WMM2020.nm_max == 12U);
+    CHECK(magneto_MODEL_WMM2020.num_model_coeffs == 90U);
+    CHECK(magneto_MODEL_WMM2020.num_models == 1U);
+    CHECK(magneto_MODEL_WMM2020.models);
+    CHECK(magneto_MODEL_WMM2020.models[0].coeffs);
+}
+
+TEST_CASE("test_wmm2020_sanity") {
     const magneto_DecYear t = { .year = 2020 };
     const magneto_Coords pos = { .latitude = 80, .longitude = 0, .height = 0 };
 
@@ -202,7 +226,7 @@ TEST_CASE("test_wmm2020") {
 
     MESSAGE("r = ", sph.radius, ", azi = ", sph.azimuth, ", pol = ", sph.polar);
 
-    const magneto_FieldState B = eval_field(&MODEL_WMM2020, t, pos);
+    const magneto_FieldState B = eval_field(&magneto_MODEL_WMM2020, t, pos);
 
     MESSAGE("B_ned = { ", B.B_ned[0], ", ", B.B_ned[1], ", ", B.B_ned[2], " }");
 }

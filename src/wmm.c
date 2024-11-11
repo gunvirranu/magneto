@@ -6,12 +6,12 @@
 #include "magneto/model.h"
 #include "common_private.h"
 
-#define EPOCH           REAL(2000.0)
+#define EPOCH           REAL(2020.0)
 #define N_MAX           (12U)
 #define M_MAX           (12U)
 #define TOTAL_COEFFS    (90U)
 #define NUM_MODELS      (1U)
-#define INTERVAL        REAL(1.0)
+#define INTERVAL        REAL(1.0)  // Unused b/c only 1 sub-model
 
 STATIC_ASSERT(N_MAX == M_MAX, n_and_m_max_must_be_same);
 STATIC_ASSERT(MAGNETO_CALC_INDEX(1, 0) == 0, first_index_must_be_0);
@@ -209,15 +209,19 @@ static const magneto_SphericalHarmonicCoeff SECULAR_WMM2020[TOTAL_COEFFS] = {
     { .g = REAL(-1.8663223476977468e-09), .h = REAL(-1.8663223476977468e-09) },  // (n =  12, m =  12)
 };
 
-const magneto_Model MODEL_WMM2020 = {
+STATIC_ASSERT(ARRAY_SIZE(COEFFS_WMM2020) == TOTAL_COEFFS, check_coeffs_array_size);
+STATIC_ASSERT(ARRAY_SIZE(SECULAR_WMM2020) == TOTAL_COEFFS, check_secular_coeffs_array_size);
+STATIC_ASSERT(ARRAY_SIZE(SUBMODELS_WMM2020) == NUM_MODELS, check_submodels_array_size);
+
+const magneto_Model magneto_MODEL_WMM2020 = {
     .epoch = {
         .year = EPOCH
     },
     .nm_max = N_MAX,
     .num_model_coeffs = TOTAL_COEFFS,
-    .num_models = 1U,
-    .model_interval = {                 // Unused
-        .year = 1
+    .num_models = NUM_MODELS,
+    .model_interval = {  // Unused b/c only 1 sub-model
+        .year = INTERVAL
     },
     .models = SUBMODELS_WMM2020,
     .last_secular = {

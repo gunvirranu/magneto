@@ -21,8 +21,8 @@ static const uint16_t YEAR_MAX = 9999U;
 static const uint8_t MONTH_MIN = 1U;
 static const uint8_t MONTH_MAX = 12U;
 static const uint8_t DAY_MIN = 1U;
-/// Number of days in each month, indexed by month (0 is unused)
-static const uint8_t DAY_MAX[13U] = { 0U, 31U, 28U, 31U, 30U, 31U, 30U, 31U, 31U, 30U, 31U, 30U, 31U };
+/// Number of days in each month, indexed by [month] (0 is unused, 1 is January)
+static const uint8_t DAY_MAX[13U] = {0U, 31U, 28U, 31U, 30U, 31U, 30U, 31U, 31U, 30U, 31U, 30U, 31U };
 static const uint8_t HOUR_MIN = 0U;
 static const uint8_t HOUR_MAX = 24U;
 static const uint8_t MINUTE_MIN = 0U;
